@@ -1,5 +1,5 @@
 import { CONFIG } from "../config/config";
-import { createChat } from "./openai";
+import { createStreamChat } from "./openai";
 import { clearMessages, getMessages, setMessages } from "../lib/database";
 import { replyText } from "./line";
 
@@ -20,7 +20,7 @@ const handleLineMessage = async (event) => {
     messages.push({ role: "user", content: text });
 
     const startTime = Date.now();
-    const { message, finish_reason, total_tokens } = await createChat(messages);
+    const { message, finish_reason, total_tokens } = await createStreamChat(messages);
     const elapsed = Date.now() - startTime;
     console.log(
       `[Info]: total_tokens: ${total_tokens}, finish_reason: ${finish_reason}, elapsed: ${elapsed}ms`
