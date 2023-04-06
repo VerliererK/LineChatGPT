@@ -7,6 +7,31 @@ export const config = {
   runtime: "edge",
 };
 
+const validateSignature = async (
+  xLineSignature: string | null,
+  body: string
+) => {
+  const channelSecret = CONFIG.LINE_CHANNEL_SECRET;
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(channelSecret),
+    { name: "HMAC", hash: "SHA-256" },
+    true,
+    ["sign"]
+  );
+  const signature = await crypto.subtle
+    .sign("HMAC", key, enc.encode(body))
+    .then((data) =>
+      Buffer.from(
+        String.fromCharCode(...new Uint8Array(data)),
+        "binary"
+      ).toString("base64")
+    );
+
+  return xLineSignature === signature;
+};
+
 const handleLineMessage = async (event) => {
   const { replyToken } = event;
   const userId = event.source.userId;
@@ -38,7 +63,13 @@ export default async (req: Request): Promise<Response> => {
   let replyToken = null;
   try {
     CONFIG.API_HOST = CONFIG.API_HOST || new URL(req.url).origin;
-    const { events } = await req.json();
+    const body = await req.text();
+    const xLineSignature = req.headers.get("x-line-signature");
+    const isValidate = await validateSignature(xLineSignature, body);
+    if (!isValidate) {
+      throw Error("Validate Failed!");
+    }
+    const { events } = JSON.parse(body);
     replyToken = events[0].replyToken;
     if (events[0].type === "message") {
       await handleLineMessage(events[0]);
