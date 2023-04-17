@@ -2,6 +2,7 @@ import { CONFIG } from "../config/config";
 import { createStreamChat } from "./openai";
 import { clearMessages, getMessages, setMessages } from "../lib/database";
 import { replyText } from "./line";
+import { COMMANDS } from "../lib/command";
 
 export const config = {
   runtime: "edge",
@@ -37,9 +38,12 @@ const handleLineMessage = async (event) => {
   const userId = event.source.userId;
   const { type, text } = event.message;
 
-  if (text === "忘記") {
-    await clearMessages(userId);
-    await replyText("已忘記", replyToken);
+  const command = Object.keys(COMMANDS).find((command) => {
+    return COMMANDS[command].keywords.includes(text);
+  });
+  if (command) {
+    const message = await COMMANDS[command].handle(userId);
+    await replyText(message, replyToken);
   } else if (type === "text") {
     const messages = await getMessages(userId);
     messages.push({ role: "user", content: text });
