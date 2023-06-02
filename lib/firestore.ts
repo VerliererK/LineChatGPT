@@ -1,29 +1,17 @@
 import { CONFIG } from "../config/config";
-import { initializeApp } from "firebase/app";
-import {
-  getFirestore,
-  doc,
-  getDoc,
-  deleteDoc,
-  setDoc,
-  collection,
-  getDocs,
-} from "firebase/firestore";
+import { initializeApp, cert } from "firebase-admin/app";
+import { getFirestore } from "firebase-admin/firestore";
 import getTokens from "../utils/getTokens";
 
-const firebaseConfig = {
-  projectId: CONFIG.FIREBASE_PROJECT_ID,
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-const getUserRef = (userID: string) => {
-  return doc(db, "users", userID);
-};
+initializeApp({
+  credential: cert(JSON.parse(
+    Buffer.from(CONFIG.FIREBASE_CERT, "base64").toString("utf8")
+  )),
+});
+const db = getFirestore();
 
 export const getAllUsers = async () => {
-  const snapshot = await getDocs(collection(db, "users"));
+  const snapshot = await db.collection("users").get();
   const allUsers = {};
   snapshot.docs.forEach((doc) => {
     const id = doc.id;
@@ -34,19 +22,17 @@ export const getAllUsers = async () => {
 };
 
 export const deleteUser = async (userID: string) => {
-  return deleteDoc(getUserRef(userID));
+  return db.collection("users").doc(userID).delete();
 };
 
 export const getToken = async (userID: string) => {
-  const ref = getUserRef(userID);
-  const user = await getDoc(ref);
-  return user.exists() ? Number(user.data().token) : 0;
+  const user = await db.collection("users").doc(userID).get();
+  return user.exists ? user.data()?.token : "";
 };
 
 export const getMessages = async (userID: string) => {
-  const ref = getUserRef(userID);
-  const user = await getDoc(ref);
-  return (user.exists() ? user.data().messages : []) as {
+  const user = await db.collection("users").doc(userID).get();
+  return (user.exists ? user.data()?.messages : []) as {
     role: string;
     content: string;
   }[];
@@ -57,12 +43,11 @@ export const setMessages = async (
   messages: { role: string; content: string }[]
 ) => {
   if (!Array.isArray(messages)) return;
-  const ref = getUserRef(userID);
   while (2048 < getTokens(messages.map((m) => m.content))) {
     messages.shift();
   }
   const finalToken = getTokens(messages.map((m) => m.content));
-  return setDoc(ref, { messages: messages, token: finalToken });
+  return db.collection("users").doc(userID).set({ messages: messages, token: finalToken });
 };
 
 export const clearMessages = async (userID: string) => {
