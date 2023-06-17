@@ -24,7 +24,7 @@ export const config = {
 export const createChatByText = async (text: string) => {
   const messages: { role: string; content: string }[] = [];
   if (OPENAI_SYSTEM_ROLE) {
-    messages.push({ role: "system", content: `OPENAI_SYSTEM_ROLE` });
+    messages.push({ role: "system", content: OPENAI_SYSTEM_ROLE });
   }
   messages.push({ role: "user", content: text });
   return createChat(messages);
@@ -58,6 +58,9 @@ export const createChat = async (
 export const createStreamChat = async (
   messages: { role: string; content: string }[]
 ) => {
+  if (OPENAI_SYSTEM_ROLE) {
+    messages.unshift({ role: "system", content: OPENAI_SYSTEM_ROLE });
+  }
   const payload = { ...DEFAULT_PAYLOAD, messages, stream: true };
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     headers: {
