@@ -1,5 +1,6 @@
 export const CONFIG = {
   API_HOST: process.env.API_HOST ?? "",
+  OPENAI_MODEL: process.env.OPENAI_MODEL || "gpt-3.5-turbo",
   OPENAI_SYSTEM_ROLE: process.env.OPENAI_SYSTEM_ROLE ?? null,
   OPENAI_API_KEY: process.env.OPENAI_API_KEY ?? "",
   OPENAI_API_TIMEOUT: Number(process.env.OPENAI_API_TIMEOUT) || 28000,

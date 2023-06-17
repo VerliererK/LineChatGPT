@@ -2,13 +2,14 @@ import { CONFIG } from "../config/config";
 import fetchTimeout from "../utils/fetchTimeout";
 import getTokens from "../utils/getTokens";
 
+const OPENAI_MODEL = CONFIG.OPENAI_MODEL;
 const OPENAI_SYSTEM_ROLE = CONFIG.OPENAI_SYSTEM_ROLE;
 const OPENAI_API_KEY = CONFIG.OPENAI_API_KEY;
 const OPENAI_API_TIMEOUT = CONFIG.OPENAI_API_TIMEOUT;
 
 // https://platform.openai.com/docs/api-reference/chat/create
 const DEFAULT_PAYLOAD = {
-  model: "gpt-3.5-turbo",
+  model: OPENAI_MODEL,
   // temperature: 1,
   top_p: CONFIG.OPENAI_TOP_P,
   max_tokens: CONFIG.OPENAI_MAX_TOKENS,
