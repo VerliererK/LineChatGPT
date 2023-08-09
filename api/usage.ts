@@ -1,6 +1,6 @@
 import { CONFIG } from "../config/config";
 
-const OPENAI_API_KEY = CONFIG.OPENAI_API_KEY;
+const OPENAI_SESSION_KEY = CONFIG.OPENAI_SESSION_KEY;
 
 export const config = {
   runtime: "edge",
@@ -12,10 +12,10 @@ export const getUsage = async () => {
   const month = now.getMonth() + 1;
   const start_date = year + "-" + ("0" + month).slice(-2) + "-01";
   const end_date = year + "-" + ("0" + (month + 1)).slice(-2) + "-01";
-  const res = await fetch(`https://api.openai.com/v1/dashboard/billing/usage?start_date=${start_date}&end_date=${end_date}`, {
+  const res = await fetch(`https://api.openai.com/dashboard/billing/usage?start_date=${start_date}&end_date=${end_date}`, {
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${OPENAI_API_KEY}`,
+      Authorization: `Bearer ${OPENAI_SESSION_KEY}`,
     },
     method: "GET",
   });
@@ -28,7 +28,7 @@ export const getSubscription = async () => {
   const res = await fetch('https://api.openai.com/dashboard/billing/subscription', {
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${OPENAI_API_KEY}`,
+      Authorization: `Bearer ${OPENAI_SESSION_KEY}`,
     },
     method: "GET",
   });
