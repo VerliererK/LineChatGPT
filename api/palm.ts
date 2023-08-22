@@ -9,6 +9,7 @@ const DEFAULT_PAYLOAD = {
 
 export const config = {
   runtime: "edge",
+  regions: ["iad1"],
 };
 
 export const generateMessage = async (
@@ -27,7 +28,11 @@ export const generateMessage = async (
     method: "POST",
     body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error(res.statusText);
+  if (!res.ok) {
+    const ret = await res.text();
+    console.error(ret);
+    throw new Error(res.statusText);
+  }
 
   const data = await res.json();
   const message = data.candidates[0].content.trim();
