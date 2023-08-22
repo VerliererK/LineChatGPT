@@ -1,11 +1,13 @@
 import { CONFIG } from "../config/config";
-import { createStreamChat } from "./openai";
+import { createStreamChat as createChat_openai } from "./openai";
+import { generateMessage as createChat_palm } from "./palm";
 import { clearMessages, getMessages, setMessages } from "../lib/database";
 import { replyText } from "./line";
 import { COMMANDS } from "../lib/command";
 
 export const config = {
   runtime: "edge",
+  regions: ["iad1"],
 };
 
 const validateSignature = async (
@@ -49,7 +51,8 @@ const handleLineMessage = async (event) => {
     messages.push({ role: "user", content: text });
 
     const startTime = Date.now();
-    const { message, finish_reason, total_tokens } = await createStreamChat(messages);
+    const createChat = CONFIG.LLM_API === 'palm' ? createChat_palm : createChat_openai;
+    const { message, finish_reason, total_tokens } = await createChat(messages);
     const elapsed = Date.now() - startTime;
     console.log(
       `[Info]: total_tokens: ${total_tokens}, finish_reason: ${finish_reason}, elapsed: ${elapsed}ms`
@@ -57,6 +60,10 @@ const handleLineMessage = async (event) => {
 
     await replyText(message, replyToken);
     messages.push({ role: "assistant", content: message });
+
+    if (CONFIG.LLM_API === "palm" && finish_reason === "block") {
+      return;
+    }
     await setMessages(userId, messages);
   } else {
     await replyText("不支援此訊息類別", replyToken);
