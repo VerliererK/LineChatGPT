@@ -1,6 +1,6 @@
 import { CONFIG } from "../config/config";
 import { createStreamChat as createChat_openai } from "./openai";
-import { generateMessage as createChat_palm } from "./palm";
+import { generateMessage as createChat_gemini } from "./gemini";
 import { clearMessages, getMessages, setMessages } from "../lib/database";
 import { replyText } from "./line";
 import { COMMANDS } from "../lib/command";
@@ -51,7 +51,7 @@ const handleLineMessage = async (event) => {
     messages.push({ role: "user", content: text });
 
     const startTime = Date.now();
-    const createChat = CONFIG.LLM_API === 'palm' ? createChat_palm : createChat_openai;
+    const createChat = CONFIG.LLM_API === 'gemini' ? createChat_gemini : createChat_openai;
     const { message, finish_reason, total_tokens } = await createChat(messages);
     const elapsed = Date.now() - startTime;
     console.log(
@@ -59,9 +59,9 @@ const handleLineMessage = async (event) => {
     );
 
     await replyText(message, replyToken);
-    messages.push({ role: "assistant", content: message });
+    messages.push({ role: (CONFIG.LLM_API === "gemini") ? "model" : "assistant", content: message });
 
-    if (CONFIG.LLM_API === "palm" && finish_reason === "block") {
+    if (CONFIG.LLM_API === "gemini" && finish_reason === "block") {
       return;
     }
     await setMessages(userId, messages);
