@@ -20,7 +20,7 @@ const validateSignature = async (
     "raw",
     enc.encode(channelSecret),
     { name: "HMAC", hash: "SHA-256" },
-    true,
+    false,
     ["sign"]
   );
   const signature = await crypto.subtle
