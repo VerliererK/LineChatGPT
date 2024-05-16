@@ -3,9 +3,16 @@ import fetchTimeout from "../utils/fetchTimeout";
 import getTokens from "../utils/getTokens";
 
 const GEMINI_API_KEY = CONFIG.GEMINI_API_KEY;
+const GEMINI_MODEL = CONFIG.GEMINI_MODEL;
 const API_TIMEOUT = CONFIG.OPENAI_API_TIMEOUT;
 
 const DEFAULT_PAYLOAD = {
+  generationConfig: {
+    // maxOutputTokens: 256,
+    // temperature: 1,
+    // topP: 0.95,
+    // topK: 64,
+  }
 };
 
 export const config = {
@@ -18,7 +25,7 @@ export const generateMessage = async (
   const contents = messages.map(message => { return { role: message.role, parts: [{ text: message.content }] } });
   const payload = { ...DEFAULT_PAYLOAD, contents };
   const res = await fetchTimeout(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
     {
       headers: {
         "Content-Type": "application/json",
