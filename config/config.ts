@@ -3,6 +3,8 @@ export const CONFIG = {
   LLM_API: process.env.LLM_API ?? "openai",
   GEMINI_API_KEY: process.env.GEMINI_API_KEY ?? "",
   GEMINI_MODEL: process.env.GEMINI_MODEL || "gemini-1.5-flash-latest",
+  XAI_API_KEY: process.env.XAI_API_KEY ?? "",
+  XAI_MODEL: process.env.XAI_MODEL || "grok-beta",
   OPENAI_MODEL: process.env.OPENAI_MODEL || "gpt-3.5-turbo",
   OPENAI_SYSTEM_ROLE: process.env.OPENAI_SYSTEM_ROLE ?? null,
   OPENAI_SESSION_KEY: process.env.OPENAI_SESSION_KEY ?? "",

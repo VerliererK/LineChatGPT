@@ -1,5 +1,6 @@
 import { CONFIG } from "../config/config";
 import { createStreamChat as createChat_openai } from "./openai";
+import { createStreamChat as createChat_xai } from "./xai";
 import { generateMessage as createChat_gemini } from "./gemini";
 import { clearMessages, getMessages, setMessages } from "../lib/database";
 import { replyText } from "./line";
@@ -8,6 +9,12 @@ import { COMMANDS } from "../lib/command";
 export const config = {
   runtime: "edge",
   regions: ["iad1"],
+};
+
+const SUPPORTED_APIS = {
+  openai: createChat_openai,
+  gemini: createChat_gemini,
+  xai: createChat_xai,
 };
 
 const validateSignature = async (
@@ -51,7 +58,7 @@ const handleLineMessage = async (event) => {
     messages.push({ role: "user", content: text });
 
     const startTime = Date.now();
-    const createChat = CONFIG.LLM_API === 'gemini' ? createChat_gemini : createChat_openai;
+    const createChat = SUPPORTED_APIS[CONFIG.LLM_API];
     const { message, finish_reason, total_tokens } = await createChat(messages);
     const elapsed = Date.now() - startTime;
     console.log(
