@@ -12,7 +12,10 @@ const DEFAULT_PAYLOAD = {
     // temperature: 1,
     // topP: 0.95,
     // topK: 64,
-  }
+  },
+  tools: [
+    { googleSearch: {} },
+  ],
 };
 
 export const config = {
