@@ -88,9 +88,11 @@ interface Settings {
   base_url: string;
   system_role: string;
   temperature: string;
+  top_p: string;
   max_tokens: string;
   timeout: string;
   stop_when: string;
+  reasoning_effort: string;
 }
 
 const defaultSettings: Settings = {
@@ -100,9 +102,11 @@ const defaultSettings: Settings = {
   base_url: "",
   system_role: "",
   temperature: "",
+  top_p: "",
   max_tokens: "4096",
   timeout: "290",
   stop_when: "10",
+  reasoning_effort: "",
 };
 
 function SettingsPanel({ authKey, onClose }: { authKey: string; onClose: () => void }) {
@@ -208,12 +212,29 @@ function SettingsPanel({ authKey, onClose }: { authKey: string; onClose: () => v
             <div className="settings-group">
               <div className="settings-field-grid">
                 <div className="settings-field">
+                  <label>思考深度</label>
+                  <select value={settings.reasoning_effort} onChange={(e) => update("reasoning_effort", e.target.value)}>
+                    <option value="">預設</option>
+                    <option value="none">none</option>
+                    <option value="minimal">minimal</option>
+                    <option value="low">low</option>
+                    <option value="medium">medium</option>
+                    <option value="high">high</option>
+                    <option value="xhigh">xhigh</option>
+                    <option value="max">max</option>
+                  </select>
+                </div>
+                <div className="settings-field">
                   <label>Max Tokens</label>
                   <input type="number" min="1" value={settings.max_tokens} onChange={(e) => update("max_tokens", e.target.value)} placeholder="4096" />
                 </div>
                 <div className="settings-field">
                   <label>Temperature</label>
                   <input type="number" step="0.1" min="0" max="2" value={settings.temperature} onChange={(e) => update("temperature", e.target.value)} placeholder="e.g., 0.7" />
+                </div>
+                <div className="settings-field">
+                  <label>Top P</label>
+                  <input type="number" step="0.05" min="0" max="1" value={settings.top_p} onChange={(e) => update("top_p", e.target.value)} placeholder="e.g., 0.9" />
                 </div>
                 <div className="settings-field">
                   <label>Timeout (seconds)</label>

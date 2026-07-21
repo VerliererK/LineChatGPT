@@ -62,7 +62,7 @@ Environment variables loaded at runtime. `GOOGLE_MAP_API_KEY` and `TAVILY_API_KE
 
 ### Database Schema (`database-schema.sql`)
 
-Two tables: `users` (id, messages JSONB) and `settings` (key, value). LLM settings (provider, model, api_key, base_url, system_role, temperature, max_tokens, timeout) are stored in `settings` and configurable via web UI.
+Two tables: `users` (id, messages JSONB) and `settings` (key, value). LLM settings (provider, model, api_key, base_url, system_role, temperature, top_p, max_tokens, timeout, stop_when, reasoning_effort) are stored in `settings` and configurable via web UI.
 
 ### Tool System
 
@@ -76,7 +76,8 @@ All network tools receive `abortSignal` from AI SDK and pass it to `fetch` for p
 ### AI SDK v6 Patterns
 
 - `streamText()` with `timeout: { totalMs }` and `onAbort` callback for timeout handling
-- `stopWhen: stepCountIs(5)` to limit tool loop iterations
+- `stopWhen: stepCountIs(settings.LLM_STOP_WHEN)` (default 10) to limit tool loop iterations
+- Optional `reasoning_effort` → `providerOptions` (OpenAI `reasoningEffort` + Google `thinkingConfig`); optional `topP`
 - `ModelMessage` type for conversation history
 - `inputSchema` with Zod for tool parameter validation
 - Tools use `{ abortSignal }` from second `execute` parameter
@@ -90,7 +91,7 @@ Vite + React app in `web/`, built and served as static files via `vercel.json`.
 - **Tech**: React 19, `@ai-sdk/react` `useChat` hook, `DefaultChatTransport`
 - **Auth gate**: Simple login form validates AUTH_KEY against `/api/settings`, stores in `sessionStorage`
 - **Chat**: `useChat` with `DefaultChatTransport({ api: '/api/chat', headers })` for streaming. Supports image upload with client-side compression.
-- **Settings panel**: Modal overlay opened via header gear button. Loads/saves 8 LLM fields (provider, model, api_key, base_url, system_role, temperature, max_tokens, timeout) via `GET/POST /api/settings`. Provider is a `<select>` limited to vercel/google/openai. Saves disabled when provider or model is empty. Success message auto-dismisses after 3 seconds.
+- **Settings panel**: Modal overlay opened via header gear button. Loads/saves LLM fields (provider, model, api_key, base_url, system_role, reasoning_effort, temperature, top_p, max_tokens, timeout, stop_when) via `GET/POST /api/settings`. Provider is a `<select>` limited to vercel/google/openai. Saves disabled when provider or model is empty. Success message auto-dismisses after 3 seconds.
 - **UI**: LINE-style theme (#06C755 green header, green user bubbles, white assistant bubbles), responsive design. Font sizes unified to 3 tiers: `1.2rem` (headings), `1rem` (body), `0.85rem` (labels/captions).
 - **Dev proxy**: `vite.config.ts` proxies `/api` to `http://localhost:3000`
 

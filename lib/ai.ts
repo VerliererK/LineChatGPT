@@ -225,15 +225,29 @@ export const createChatConfig = async (messages: ModelMessage[], options: ChatOp
   }
 
   const tools = enableTools ? createTools(toolExecutors) : undefined;
+  const effort = settings.LLM_REASONING_EFFORT as string | undefined;
+
   return {
     model,
     maxOutputTokens: settings.LLM_MAX_TOKENS,
     temperature: settings.LLM_TEMPERATURE,
+    topP: settings.LLM_TOP_P,
     system: settings.LLM_SYSTEM_ROLE || DEFAULT_SYSTEM_ROLE,
     messages,
     tools,
     stopWhen: stepCountIs(settings.LLM_STOP_WHEN),
     timeout: { totalMs: settings.LLM_TIMEOUT * 1000 },
+    // 同時填 openai + google，讓 Vercel gateway 字串 model 也能吃到
+    ...(effort ? {
+      providerOptions: {
+        openai: { reasoningEffort: effort },
+        google: {
+          thinkingConfig: effort === "none"
+            ? { thinkingBudget: 0 }
+            : { thinkingLevel: (effort === "xhigh" || effort === "max" ? "high" : effort) },
+        },
+      },
+    } : {}),
     onError: ({ error }: { error: unknown }) => {
       console.error('[Error] streamText:', error);
     }
