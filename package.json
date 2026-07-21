@@ -1,14 +1,14 @@
 {
   "dependencies": {
-    "@ai-sdk/google": "^3.0.80",
-    "@ai-sdk/openai": "^3.0.67",
-    "@neondatabase/serverless": "^1.0.2",
-    "@vercel/blob": "^2.4.0",
-    "ai": "^6.0.193",
+    "@ai-sdk/google": "^3.0.98",
+    "@ai-sdk/openai": "^3.0.86",
+    "@neondatabase/serverless": "^1.1.0",
+    "@vercel/blob": "^2.6.1",
+    "ai": "^6.0.233",
     "sharp": "^0.34.5"
   },
   "devDependencies": {
-    "@types/node": "^24.13.1",
+    "@types/node": "^24.13.3",
     "typescript": "^6.0.3"
   }
 }
