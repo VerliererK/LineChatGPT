@@ -27,7 +27,9 @@ button {
 
 /* --- Animations --- */
 @keyframes fade-in {
-  from { opacity: 0; }
+  from {
+    opacity: 0;
+  }
 }
 
 @keyframes bubble-in {
@@ -40,7 +42,17 @@ button {
 @keyframes panel-in {
   from {
     opacity: 0;
-    transform: translateY(18px) scale(0.98);
+    transform: translateY(6px) scale(0.99);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
   }
 }
 
@@ -104,8 +116,13 @@ button {
   transition: background 0.15s, transform 0.1s;
 }
 
-.auth-card button:hover { background: var(--line-green-dark); }
-.auth-card button:active { transform: scale(0.98); }
+.auth-card button:hover {
+  background: var(--line-green-dark);
+}
+
+.auth-card button:active {
+  transform: scale(0.98);
+}
 
 .auth-card button:disabled {
   background: #ccc;
@@ -264,7 +281,9 @@ button {
   transition: opacity 0.15s;
 }
 
-.chat-error button:hover { opacity: 0.85; }
+.chat-error button:hover {
+  opacity: 0.85;
+}
 
 /* --- Typing dots --- */
 .typing-dots {
@@ -281,13 +300,29 @@ button {
   animation: bounce 1.3s infinite ease-in-out;
 }
 
-.typing-dots span:nth-child(1) { animation-delay: -0.32s; }
-.typing-dots span:nth-child(2) { animation-delay: -0.16s; }
-.typing-dots span:nth-child(3) { animation-delay: 0s; }
+.typing-dots span:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.typing-dots span:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+.typing-dots span:nth-child(3) {
+  animation-delay: 0s;
+}
 
 @keyframes bounce {
-  0%, 80%, 100% { transform: scale(0); }
-  40% { transform: scale(1); }
+
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+  }
+
+  40% {
+    transform: scale(1);
+  }
 }
 
 /* --- Input area --- */
@@ -395,9 +430,19 @@ button {
   transition: background 0.15s, transform 0.1s;
 }
 
-.send-btn:hover { background: var(--line-green-dark); }
-.send-btn:active { transform: scale(0.92); }
-.send-btn:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+.send-btn:hover {
+  background: var(--line-green-dark);
+}
+
+.send-btn:active {
+  transform: scale(0.92);
+}
+
+.send-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
 
 /* --- Settings panel --- */
 .settings-panel {
@@ -462,7 +507,7 @@ button {
   gap: 12px;
 }
 
-.settings-group + .settings-group {
+.settings-group+.settings-group {
   border-top: 1px solid #EEF0F2;
   padding-top: 14px;
 }
@@ -482,6 +527,208 @@ button {
 .settings-field label.required::after {
   content: " *";
   color: var(--error);
+}
+
+/* --- Settings field header (with fetch models button) --- */
+.settings-field-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fetch-models-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  background: var(--bg);
+  color: var(--text-soft);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.fetch-models-btn:hover:not(:disabled) {
+  background: #EAECEF;
+  color: var(--text);
+  border-color: #B0B7C0;
+}
+
+.fetch-models-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.fetch-models-btn svg.spin {
+  animation: spin 1s linear infinite;
+}
+
+/* --- Combobox --- */
+.combobox-container {
+  position: relative;
+  width: 100%;
+}
+
+.combobox-input-wrapper {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--white);
+  transition: border-color 0.15s, box-shadow 0.15s;
+  overflow: hidden;
+}
+
+.combobox-input-wrapper:focus-within {
+  border-color: var(--line-green);
+  box-shadow: var(--ring);
+}
+
+.combobox-input {
+  flex: 1;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding: 9px 12px !important;
+  font-size: 1rem;
+  color: var(--text);
+  outline: none;
+}
+
+.combobox-clear-btn {
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #999;
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-right: 2px;
+  transition: background 0.12s, color 0.12s;
+  flex-shrink: 0;
+}
+
+.combobox-clear-btn:hover {
+  background: #EEE;
+  color: #333;
+}
+
+.combobox-toggle-btn {
+  width: 34px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  color: #777;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.combobox-toggle-btn:hover {
+  color: var(--text);
+}
+
+.combobox-toggle-btn.open svg {
+  transform: rotate(180deg);
+}
+
+.combobox-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.16);
+  z-index: 25;
+  max-height: 220px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: fade-in 0.15s ease-out;
+}
+
+.combobox-header {
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-soft);
+  background: #F8F9FA;
+  border-bottom: 1px solid #EEF0F2;
+  flex-shrink: 0;
+}
+
+.combobox-list {
+  overflow-y: auto;
+  flex: 1;
+  padding: 4px 0;
+}
+
+.combobox-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.combobox-item:hover {
+  background: #F0F4F8;
+}
+
+.combobox-item.selected {
+  background: var(--success-bg);
+  color: #05A54A;
+  font-weight: 600;
+}
+
+.combobox-check-icon {
+  flex-shrink: 0;
+  color: #05A54A;
+  margin-left: 8px;
+}
+
+.combobox-empty {
+  padding: 12px;
+  font-size: 0.82rem;
+  color: var(--text-soft);
+  text-align: center;
+}
+
+.model-status-text {
+  font-size: 0.75rem;
+  margin-top: 2px;
+  padding: 2px 4px;
+  animation: fade-in 0.15s ease-out;
+}
+
+.model-status-text.success {
+  color: #05A54A;
+}
+
+.model-status-text.error {
+  color: var(--error);
+}
+
+.model-status-text.info {
+  color: #2B6CB0;
 }
 
 .settings-field input,
@@ -584,7 +831,9 @@ button {
   background: var(--line-green-dark);
 }
 
-.settings-save-btn:active { transform: scale(0.98); }
+.settings-save-btn:active {
+  transform: scale(0.98);
+}
 
 .settings-save-btn:disabled {
   background: #ccc;
@@ -597,9 +846,18 @@ button {
   .bubble {
     max-width: 82%;
   }
-  .chat-header { padding: 10px 12px; }
-  .input-area { padding: 8px; }
-  .chat-container { box-shadow: none; }
+
+  .chat-header {
+    padding: 10px 12px;
+  }
+
+  .input-area {
+    padding: 8px;
+  }
+
+  .chat-container {
+    box-shadow: none;
+  }
 
   /* settings becomes a bottom sheet */
   .settings-panel {

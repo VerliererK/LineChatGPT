@@ -109,11 +109,161 @@ const defaultSettings: Settings = {
   reasoning_effort: "",
 };
 
+function ModelCombobox({
+  value,
+  onChange,
+  models,
+  placeholder,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  models: string[];
+  placeholder?: string;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [filter, setFilter] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+        setIsTyping(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const displayModels = isTyping && filter.trim()
+    ? models.filter((m) => m.toLowerCase().includes(filter.trim().toLowerCase()))
+    : models;
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setIsTyping(true);
+    setFilter(val);
+    onChange(val);
+    if (!isOpen) setIsOpen(true);
+  };
+
+  const handleSelect = (model: string) => {
+    onChange(model);
+    setFilter("");
+    setIsTyping(false);
+    setIsOpen(false);
+  };
+
+  const handleInputFocus = () => {
+    setIsTyping(false);
+    setFilter("");
+    setIsOpen(true);
+  };
+
+  const toggleDropdown = () => {
+    if (isOpen) {
+      setIsOpen(false);
+      setIsTyping(false);
+    } else {
+      setIsTyping(false);
+      setFilter("");
+      setIsOpen(true);
+      inputRef.current?.focus();
+    }
+  };
+
+  return (
+    <div className="combobox-container" ref={containerRef}>
+      <div className="combobox-input-wrapper">
+        <input
+          ref={inputRef}
+          type="text"
+          value={value}
+          onChange={handleInputChange}
+          onFocus={handleInputFocus}
+          placeholder={placeholder}
+          className="combobox-input"
+        />
+        {value && (
+          <button
+            type="button"
+            className="combobox-clear-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              onChange("");
+              setFilter("");
+              setIsTyping(false);
+              setIsOpen(true);
+              inputRef.current?.focus();
+            }}
+            title="清除輸入"
+          >
+            &times;
+          </button>
+        )}
+        <button
+          type="button"
+          className={`combobox-toggle-btn ${isOpen ? "open" : ""}`}
+          onClick={toggleDropdown}
+          title="選擇或切換模型"
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
+      </div>
+
+      {isOpen && (
+        <div className="combobox-dropdown">
+          <div className="combobox-header">
+            <span>可用模型 ({displayModels.length})</span>
+          </div>
+          {models.length === 0 ? (
+            <div className="combobox-empty">
+              <span>尚未取得模型清單，請點擊「取得模型」或手動輸入</span>
+            </div>
+          ) : displayModels.length > 0 ? (
+            <div className="combobox-list">
+              {displayModels.map((m) => {
+                const isSelected = m === value;
+                return (
+                  <div
+                    key={m}
+                    className={`combobox-item ${isSelected ? "selected" : ""}`}
+                    onClick={() => handleSelect(m)}
+                  >
+                    <span className="combobox-item-text">{m}</span>
+                    {isSelected && (
+                      <svg className="combobox-check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="combobox-empty">
+              <span>無匹配項目，將使用自訂模型：<strong>{value}</strong></span>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function SettingsPanel({ authKey, onClose }: { authKey: string; onClose: () => void }) {
   const [settings, setSettings] = useState<Settings>(defaultSettings);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  const [availableModels, setAvailableModels] = useState<Record<string, string[]>>({});
+  const [fetchingModels, setFetchingModels] = useState(false);
+  const [modelStatus, setModelStatus] = useState<{ type: "success" | "error" | "info"; text: string } | null>(null);
 
   useEffect(() => {
     fetch("/api/settings", {
@@ -139,8 +289,67 @@ function SettingsPanel({ authKey, onClose }: { authKey: string; onClose: () => v
     }
   }, [message]);
 
+  useEffect(() => {
+    if (modelStatus) {
+      const timer = setTimeout(() => setModelStatus(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [modelStatus]);
+
   const update = (field: keyof Settings, value: string) => {
     setSettings((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleProviderChange = (newProvider: string) => {
+    update("provider", newProvider);
+    setModelStatus(null);
+  };
+
+  const fetchModels = async () => {
+    setFetchingModels(true);
+    setModelStatus(null);
+    try {
+      const res = await fetch("/api/models", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${authKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          provider: settings.provider,
+          api_key: settings.api_key,
+          base_url: settings.base_url,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && Array.isArray(data.models)) {
+        setAvailableModels((prev) => ({
+          ...prev,
+          [settings.provider]: data.models,
+        }));
+        if (data.models.length > 0) {
+          setModelStatus({
+            type: "success",
+            text: `成功取得 ${data.models.length} 個模型`,
+          });
+        } else {
+          setModelStatus({
+            type: "info",
+            text: data.message || "未取得任何模型",
+          });
+        }
+      } else {
+        setModelStatus({
+          type: "error",
+          text: data.error || "取得模型失敗",
+        });
+      }
+    } catch {
+      setModelStatus({ type: "error", text: "無法連線至模型查詢服務" });
+    } finally {
+      setFetchingModels(false);
+    }
   };
 
   const save = async () => {
@@ -169,6 +378,7 @@ function SettingsPanel({ authKey, onClose }: { authKey: string; onClose: () => v
   };
 
   const canSave = settings.provider.trim() !== "" && settings.model.trim() !== "";
+  const currentModelList = availableModels[settings.provider] || [];
 
   return (
     <div className="modal-overlay">
@@ -184,31 +394,76 @@ function SettingsPanel({ authKey, onClose }: { authKey: string; onClose: () => v
             <div className="settings-group">
               <div className="settings-field">
                 <label className="required">Provider</label>
-                <select value={settings.provider} onChange={(e) => update("provider", e.target.value)}>
+                <select value={settings.provider} onChange={(e) => handleProviderChange(e.target.value)}>
                   <option value="vercel">Vercel</option>
                   <option value="google">Google</option>
                   <option value="openai">OpenAI</option>
                 </select>
               </div>
-              <div className="settings-field">
-                <label className="required">Model</label>
-                <input value={settings.model} onChange={(e) => update("model", e.target.value)} placeholder="e.g., openai/gpt-5" />
-              </div>
+
               <div className="settings-field">
                 <label>API Key</label>
                 <input type="password" value={settings.api_key} onChange={(e) => update("api_key", e.target.value)} placeholder="Enter your API key" />
               </div>
+
               <div className="settings-field">
                 <label>Base URL (Optional)</label>
                 <input value={settings.base_url} onChange={(e) => update("base_url", e.target.value)} placeholder="e.g., https://api.example.com/v1" />
               </div>
+
+              <div className="settings-field">
+                <div className="settings-field-header">
+                  <label className="required">Model</label>
+                  <button
+                    type="button"
+                    className="fetch-models-btn"
+                    onClick={fetchModels}
+                    disabled={fetchingModels}
+                    title="從 Provider 取得最新可用模型"
+                  >
+                    <svg
+                      className={fetchingModels ? "spin" : ""}
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" />
+                    </svg>
+                    <span>{fetchingModels ? "取得中..." : "取得模型"}</span>
+                  </button>
+                </div>
+                <ModelCombobox
+                  value={settings.model}
+                  onChange={(val) => update("model", val)}
+                  models={currentModelList}
+                  placeholder={
+                    settings.provider === "vercel"
+                      ? "e.g., openai/gpt-5"
+                      : settings.provider === "google"
+                        ? "e.g., gemini-2.5-pro"
+                        : "e.g., gpt-5"
+                  }
+                />
+                {modelStatus && (
+                  <p className={`model-status-text ${modelStatus.type}`}>
+                    {modelStatus.text}
+                  </p>
+                )}
+              </div>
             </div>
+
             <div className="settings-group">
               <div className="settings-field">
                 <label>System Role</label>
                 <textarea rows={4} value={settings.system_role} onChange={(e) => update("system_role", e.target.value)} placeholder="Define the assistant's behavior..." />
               </div>
             </div>
+
             <div className="settings-group">
               <div className="settings-field-grid">
                 <div className="settings-field">

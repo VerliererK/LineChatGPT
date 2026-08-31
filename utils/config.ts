@@ -9,4 +9,5 @@ export const CONFIG = {
   // optional
   GOOGLE_MAP_API_KEY: process.env.GOOGLE_MAP_API_KEY,
   TAVILY_API_KEY: process.env.TAVILY_API_KEY,
+  AI_GATEWAY_API_KEY: process.env.AI_GATEWAY_API_KEY ?? "",
 };
